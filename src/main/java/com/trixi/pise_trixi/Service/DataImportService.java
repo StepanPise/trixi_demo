@@ -61,7 +61,7 @@ public class DataImportService {
         List<CastObce> castiObceList = new ArrayList<>();
 
         boolean parsingObec = false;
-        boolean parsingCast = false;
+        boolean parsingCastObce = false;
         StringBuilder textBuffer = new StringBuilder();
 
         Long kod = null;
@@ -75,12 +75,12 @@ public class DataImportService {
                     String startName = reader.getLocalName();
                     textBuffer.setLength(0);
 
-                    if ("Obec".equals(startName) && !parsingCast) {
+                    if ("Obec".equals(startName) && !parsingCastObce) {
                         parsingObec = true;
                         kod = null;
                         nazev = null;
                     } else if ("CastObce".equals(startName)) {
-                        parsingCast = true;
+                        parsingCastObce = true;
                         kod = null;
                         nazev = null;
                     }
@@ -94,7 +94,7 @@ public class DataImportService {
                     String endName = reader.getLocalName();
                     String content = textBuffer.toString().trim();
 
-                    if (parsingObec && !parsingCast) {
+                    if (parsingObec && !parsingCastObce) {
                         if ("Kod".equalsIgnoreCase(endName) && kod == null && !content.isEmpty()) {
                             kod = Long.parseLong(content);
 
@@ -103,7 +103,8 @@ public class DataImportService {
 
                         } else if ("Obec".equals(endName)) {
                             if (kod != null && nazev != null) {
-                                obec = new Obec();
+
+                                obec = obecRepository.findById(kod).orElseGet(Obec::new);
                                 obec.setKod(kod);
                                 obec.setNazev(nazev);
                                 obec = obecRepository.save(obec);
@@ -111,7 +112,7 @@ public class DataImportService {
                             }
                             parsingObec = false;
                         }
-                    } else if (parsingCast) {
+                    } else if (parsingCastObce) {
 
                         if ("Kod".equalsIgnoreCase(endName) && kod == null && !content.isEmpty()) {
                             kod = Long.parseLong(content);
@@ -121,14 +122,15 @@ public class DataImportService {
 
                         } else if ("CastObce".equals(endName)) {
                             if (kod != null && nazev != null && obec != null) {
-                                CastObce cast = new CastObce();
+                                CastObce cast = castObceRepository.findById(kod).orElseGet(CastObce::new);
+
                                 cast.setKod(kod);
                                 cast.setNazev(nazev);
                                 cast.setObec(obec);
                                 castiObceList.add(cast);
                                 log.info("Nactena cast obce: {} (kod: {})", nazev, kod);
                             }
-                            parsingCast = false;
+                            parsingCastObce = false;
 
                         }
                     }
