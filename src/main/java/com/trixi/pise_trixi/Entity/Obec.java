@@ -19,6 +19,6 @@ public class Obec {
 
     private String nazev;
 
-    @OneToMany(mappedBy = "obec", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "obec", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CastObce> castiObce = new ArrayList<>();
 }
